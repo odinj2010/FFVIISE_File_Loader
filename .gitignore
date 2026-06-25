@@ -1,0 +1,26 @@
+# MSVC/GCC build outputs
+*.obj
+*.o
+*.dll
+*.lib
+*.exp
+*.map
+*.pdb
+build/
+x64/
+Debug/
+Release/
+
+# Archives and packages
+*.zip
+*.rar
+
+# Loader log/crash files
+mods_loader_log.txt
+mods_loader_crash.txt
+mods_loader_crash.dmp
+
+# IDE configuration directories
+.vs/
+.idea/
+.vscode/
