@@ -12,7 +12,7 @@ This utility allows modders and players to load unpacked, custom "loose" files (
 *   **LGP Archive Overrides**: Easily override any asset file inside LGP archives (e.g. textures, models, map scripts) without modifying the original archive.
 *   **Full File Overrides**: Redirect entire game directories or standalone files (like `scene.bin`, movies, music, or layouts).
 *   **Native Compatibility**: Acts as a proxy for the system `d3d11.dll`, forwarding all graphics commands directly to DirectX 11 for perfect game performance and compatibility with Steam overlays and launchers.
-*   **Diagnostic Logging**: Automatically outputs a log (`mods_loader_log.txt`) in the game directory to verify which files are being successfully redirected.
+*   **Startup Overlay**: Displays a brief status text overlay ("FFVIISE File Loader Active - by NfgOdin") for the first 5 seconds to confirm the loader is up and running.
 
 ---
 
@@ -21,7 +21,7 @@ This utility allows modders and players to load unpacked, custom "loose" files (
 1.  Download and extract the contents of **`FFVIISE_File_Loader.zip`**.
 2.  Navigate to your Final Fantasy VII Steam installation folder (where `FFVII.exe` and `FFVII_LAUNCHER.exe` are located). The default path is usually:
     `C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VII Steam Edition\`
-3.  Drag and drop all extracted files (`d3d11.dll`, `FFVIISE_File_Loader_README.md`, and the empty `mods` folder) directly into this folder.
+3.  Drag and drop all extracted files (`d3d11.dll`, `README.md`, and the empty `mods` folder) directly into this folder.
 
 ---
 
@@ -60,27 +60,6 @@ To override a specific file packed inside an `.lgp` archive, create a folder in 
 *   **Menu Assets inside `menu.lgp`**:
     To override `window.tex` inside `ff7/workingdir/data/menu.lgp`, place it at:
     `.../mods/menu/window.tex`
-
----
-
-## Verifying Redirections (Troubleshooting)
-
-When you launch the game, the loader automatically creates a file named **`mods_loader_log.txt`** in your game directory. You can open this text file to verify the status:
-
-1.  **Successful Initialization**:
-    ```text
-    [Loader] Initializing hooks...
-    [Loader] Hooks initialized. fopen: 00007FFC09FE5C00, _wfopen: 00007FFC09FDDFA0
-    ```
-2.  **File Redirection Confirmation**:
-    When the game successfully overrides an asset, it will log the path redirection:
-    ```text
-    [Loader] Redirecting fopen: D:\Games\FF7\ff7\workingdir\data\movies\opening.bik -> D:\Games\FF7\mods\movies\opening.bik
-    ```
-
-### Common Issues:
-*   **No log file is created**: Double check that `d3d11.dll` is placed in the same folder as the game's main executable. Also ensure you are running the 64-bit version of the game.
-*   **The game crashes or restarts immediately**: Make sure you have installed the correct 64-bit compiled DLL. Running a 32-bit DLL in a 64-bit game environment will cause loading errors.
 
 ---
 
