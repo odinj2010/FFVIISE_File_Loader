@@ -13,6 +13,7 @@ This utility allows modders and players to load unpacked, custom "loose" files (
 *   **Full File Overrides**: Redirect entire game directories or standalone files (like `scene.bin`, movies, music, or layouts).
 *   **Native Compatibility**: Acts as a proxy for the system `d3d11.dll`, forwarding all graphics commands directly to DirectX 11 for perfect game performance and compatibility with Steam overlays and launchers.
 *   **Startup Overlay**: Displays a brief status text overlay ("FFVIISE File Loader Active - by NfgOdin") for the first 5 seconds to confirm the loader is up and running.
+*   **Plugins Loader**: Automatically scans and dynamically loads third-party mod DLLs/scripts from the `plugins/` directory at game startup.
 
 ---
 
@@ -21,7 +22,7 @@ This utility allows modders and players to load unpacked, custom "loose" files (
 1.  Download and extract the contents of **`FFVIISE_File_Loader.zip`**.
 2.  Navigate to your Final Fantasy VII Steam installation folder (where `FFVII.exe` and `FFVII_LAUNCHER.exe` are located). The default path is usually:
     `C:\Program Files (x86)\Steam\steamapps\common\FINAL FANTASY VII Steam Edition\`
-3.  Drag and drop all extracted files (`d3d11.dll`, `README.md`, and the empty `mods` folder) directly into this folder.
+3.  Drag and drop all extracted files (`d3d11.dll`, `README.md`, and the empty `mods/` and `plugins/` folders) directly into this folder.
 
 ---
 
@@ -60,6 +61,14 @@ To override a specific file packed inside an `.lgp` archive, create a folder in 
 *   **Menu Assets inside `menu.lgp`**:
     To override `window.tex` inside `ff7/workingdir/data/menu.lgp`, place it at:
     `.../mods/menu/window.tex`
+
+---
+
+### 3. Using Plugins (`plugins/`)
+You can drop third-party DLL plugins (such as gameplay modifications, script hooks, or graphic enhancements) directly into the `plugins/` directory.
+
+* The loader automatically scans this folder at startup.
+* Any `.dll` file found in the `plugins/` folder will be loaded into the game process via `LoadLibraryW`.
 
 ---
 
