@@ -108,7 +108,7 @@ if %ERRORLEVEL% neq 0 (
 echo [INFO] Running 'git commit -m "%commit_msg%"'
 call git commit -m "%commit_msg%"
 if %ERRORLEVEL% neq 0 (
-    echo [ERROR] git commit failed (perhaps no changes to commit?).
+    echo [ERROR] git commit failed. Perhaps there are no changes to commit?
     pause
     exit /b 1
 )
