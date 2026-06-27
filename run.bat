@@ -76,8 +76,16 @@ echo [INFO] Configuring environment using: "%VCVARS%" %VCVARS_ARGS%
 call "%VCVARS%" %VCVARS_ARGS%
 
 :compile
+echo [INFO] Compiling resources (resources.rc)...
+rc.exe resources.rc
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Resource compilation failed.
+    pause
+    exit /b %ERRORLEVEL%
+)
+
 echo [INFO] Compiling d3d11.dll with MSVC...
-cl.exe /LD /O2 d3d11_proxy.cpp hooks.cpp minhook/src/buffer.c minhook/src/hook.c minhook/src/trampoline.c minhook/src/hde/hde32.c minhook/src/hde/hde64.c /Iminhook/include /link /out:d3d11.dll user32.lib kernel32.lib gdi32.lib d3d11.lib d2d1.lib dwrite.lib
+cl.exe /LD /O2 d3d11_proxy.cpp hooks.cpp minhook/src/buffer.c minhook/src/hook.c minhook/src/trampoline.c minhook/src/hde/hde32.c minhook/src/hde/hde64.c resources.res /Iminhook/include /link /out:d3d11.dll user32.lib kernel32.lib gdi32.lib d3d11.lib d2d1.lib dwrite.lib
 
 if %ERRORLEVEL% equ 0 (
     echo [SUCCESS] Compilation completed successfully! d3d11.dll is ready.

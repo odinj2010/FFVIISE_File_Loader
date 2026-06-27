@@ -720,17 +720,7 @@ ungetc_t OriginalUngetc = nullptr;
 _fileno_t OriginalFileno = nullptr;
 fflush_t OriginalFflush = nullptr;
 
-// Original Win32 Function Pointers
-typedef HANDLE(WINAPI* CreateFileW_t)(
-    LPCWSTR lpFileName,
-    DWORD dwDesiredAccess,
-    DWORD dwShareMode,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-    DWORD dwCreationDisposition,
-    DWORD dwFlagsAndAttributes,
-    HANDLE hTemplateFile
-);
-CreateFileW_t OriginalCreateFileW = nullptr;
+
 
 // Helper to check if a file exists
 bool FileExists(const std::wstring& path) {
@@ -794,15 +784,7 @@ int HookedUngetc(int c, FILE* stream);
 int HookedFileno(FILE* stream);
 int HookedFflush(FILE* stream);
 void HookedClearerr(FILE* stream);
-HANDLE WINAPI HookedCreateFileW(
-    LPCWSTR lpFileName,
-    DWORD dwDesiredAccess,
-    DWORD dwShareMode,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-    DWORD dwCreationDisposition,
-    DWORD dwFlagsAndAttributes,
-    HANDLE hTemplateFile
-);
+
 
 void LoadConfiguration() {
     wchar_t exePath[MAX_PATH];
@@ -1153,23 +1135,6 @@ void InitializeHooks() {
         if (targetUngetc) MH_CreateHook(targetUngetc, (LPVOID)&HookedUngetc, (LPVOID*)&OriginalUngetc);
         if (targetFileno) MH_CreateHook(targetFileno, (LPVOID)&HookedFileno, (LPVOID*)&OriginalFileno);
         if (targetFflush) MH_CreateHook(targetFflush, (LPVOID)&HookedFflush, (LPVOID*)&OriginalFflush);
-
-        // Hook Win32 CreateFileW to intercept native file openings
-        HMODULE hKernelBase = GetModuleHandleW(L"kernelbase.dll");
-        if (!hKernelBase) {
-            hKernelBase = GetModuleHandleW(L"kernel32.dll");
-        }
-        if (hKernelBase) {
-            void* pCreateFileW = (void*)GetProcAddress(hKernelBase, "CreateFileW");
-            if (pCreateFileW) {
-                MH_STATUS status = MH_CreateHook(pCreateFileW, (LPVOID)&HookedCreateFileW, (LPVOID*)&OriginalCreateFileW);
-                if (status == MH_OK) {
-                    Log("[Loader] Hooked Win32 CreateFileW successfully!\n");
-                } else {
-                    Log("[Loader] Failed to hook Win32 CreateFileW. Status: %d\n", status);
-                }
-            }
-        }
 
         // Hook D3D11CreateDeviceAndSwapChain to intercept the game's actual SwapChain creation
         Log("[Loader] Hooking D3D11CreateDeviceAndSwapChain...\n");
@@ -1665,77 +1630,7 @@ FILE* HookedWfopen(const wchar_t* filename, const wchar_t* mode) {
     return f;
 }
 
-HANDLE WINAPI HookedCreateFileW(
-    LPCWSTR lpFileName,
-    DWORD dwDesiredAccess,
-    DWORD dwShareMode,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes,
-    DWORD dwCreationDisposition,
-    DWORD dwFlagsAndAttributes,
-    HANDLE hTemplateFile
-) {
-    if (lpFileName) {
-        wchar_t absPath[MAX_PATH];
-        if (GetFullPathNameW(lpFileName, MAX_PATH, absPath, NULL) != 0) {
-            std::wstring pathStr = absPath;
-            std::replace(pathStr.begin(), pathStr.end(), L'/', L'\\');
-            std::wstring originalPath = pathStr;
-            std::transform(pathStr.begin(), pathStr.end(), pathStr.begin(), ::towlower);
 
-            // 1. Splash screen overrides
-            std::wstring splashOverride = L"";
-            if (pathStr.find(L"dotemu-logo.png") != std::wstring::npos) {
-                splashOverride = GetSplashOverridePath(pathStr, originalPath, 101, L"dotemu.png");
-            } else if (pathStr.find(L"finelogo.png") != std::wstring::npos) {
-                splashOverride = GetSplashOverridePath(pathStr, originalPath, 102, L"finelogo.png");
-            } else if (pathStr.find(L"press_start.png") != std::wstring::npos) {
-                splashOverride = GetSplashOverridePath(pathStr, originalPath, 103, L"press_start.png");
-            }
-
-            if (!splashOverride.empty()) {
-                Log("[Loader] Redirecting CreateFileW (Splash): %S -> %S\n", lpFileName, splashOverride.c_str());
-                return OriginalCreateFileW(
-                    splashOverride.c_str(),
-                    dwDesiredAccess,
-                    dwShareMode,
-                    lpSecurityAttributes,
-                    dwCreationDisposition,
-                    dwFlagsAndAttributes,
-                    hTemplateFile
-                );
-            }
-
-            // 2. Loose file overrides (excluding LGP archives which we virtualization-hook inside fopen/wfopen)
-            size_t dataPos = pathStr.find(L"\\ff7\\workingdir\\data\\");
-            if (dataPos != std::wstring::npos && pathStr.find(L".lgp") == std::wstring::npos) {
-                std::wstring relPath = originalPath.substr(dataPos + 21);
-                std::wstring overridePath = ResolveModPath(relPath);
-                if (!overridePath.empty()) {
-                    Log("[Loader] Redirecting CreateFileW: %S -> %S\n", lpFileName, overridePath.c_str());
-                    return OriginalCreateFileW(
-                        overridePath.c_str(),
-                        dwDesiredAccess,
-                        dwShareMode,
-                        lpSecurityAttributes,
-                        dwCreationDisposition,
-                        dwFlagsAndAttributes,
-                        hTemplateFile
-                    );
-                }
-            }
-        }
-    }
-
-    return OriginalCreateFileW(
-        lpFileName,
-        dwDesiredAccess,
-        dwShareMode,
-        lpSecurityAttributes,
-        dwCreationDisposition,
-        dwFlagsAndAttributes,
-        hTemplateFile
-    );
-}
 
 
 void UpdateRedirection(FILE* stream, RedirectState& state, DWORD targetOffset) {
