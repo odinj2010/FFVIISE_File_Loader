@@ -92,12 +92,13 @@ echo ======================================================
 echo               Push changes to GitHub
 echo ======================================================
 echo.
+set "commit_msg="
 set /p commit_msg="Enter commit message (or press Enter for default 'Update mod loader'): "
 if "%commit_msg%"=="" set commit_msg=Update mod loader
 
 echo.
 echo [INFO] Running 'git add .'
-git add .
+call git add .
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] git add failed.
     pause
@@ -105,7 +106,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo [INFO] Running 'git commit -m "%commit_msg%"'
-git commit -m "%commit_msg%"
+call git commit -m "%commit_msg%"
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] git commit failed (perhaps no changes to commit?).
     pause
@@ -113,7 +114,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo [INFO] Running 'git push'
-git push
+call git push
 if %ERRORLEVEL% equ 0 (
     echo [SUCCESS] Successfully pushed changes to GitHub!
 ) else (
